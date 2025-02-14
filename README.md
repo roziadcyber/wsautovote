@@ -1,0 +1,2 @@
+# wsautovote
+auto vote
