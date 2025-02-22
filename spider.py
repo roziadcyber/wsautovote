@@ -70,25 +70,24 @@ driver = setup_driver()
 
 
 
+# 访问投票网站
 driver.get("https://wingstory.net/")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
+# 点击投票标签
 vote_button = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.XPATH, "//a[contains(text(), '投票')]"))
 )
 vote_button.click()
 
-
-
+# 输入用户名，点击投票按钮
 pingUser = WebDriverWait(driver, 10).until(
     EC.presence_of_element_located((By.ID, "pingUser"))
 )
 pingUser.click()
 pingUser.send_keys(username)
 
-
-# 投票网站.点击投票按钮
 supp_button = WebDriverWait(driver, 10).until(
     
     EC.presence_of_element_located((By.CLASS_NAME, "supp_button"))
@@ -97,12 +96,9 @@ supp_button.click()
 
 
 
-
-
-
 time.sleep(2)  
 
-# 投票网站.检查是否存在错误提示
+# 检测是否存在提示
 span_elements = driver.find_elements(By.CSS_SELECTOR, "label[for='pingUser'] span")
 if span_elements and span_elements[0].is_displayed():
     # 如果包含yyyy-mm-dd格式，则说明投票成功
