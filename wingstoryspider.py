@@ -30,7 +30,7 @@ def setup_driver():
         service = Service(chromedriver_path)
         options = webdriver.ChromeOptions()
         options.add_argument('--start-maximized')
-        options.add_argument('--disable-extensions')
+        # options.add_argument('--disable-extensions')
         # options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-web-security')
@@ -120,9 +120,9 @@ while flag == 0:
             EC.presence_of_element_located((By.ID, "captcha-status"))
         )
         print("captcha-status 已加载")
-        
+
         try:
-            p_element = captcha_status.find_element(By.TAG_NAME, "p")
+            p_element = captcha_status.find_element(By.CSS_SELECTOR, "p[align='center']")
             if p_element.text:  # 如果p标签存在且有文本
                 status_message = p_element.text
                 print(f"验证结果: {status_message}")
@@ -140,11 +140,7 @@ while flag == 0:
         except:
             print("未检测到p标签或p标签无文本，继续等待...")
             time.sleep(0.5)
-    # except TimeoutException:
-    #     print("等待验证码状态超时")
-    #     with open(f"./ticketspidernew_{date_str}.txt", "a", encoding="utf-8") as f:
-    #         f.write(f"{username} -> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -> 等待验证码状态超时\n")
-
+            
 # 完成后退出
 time.sleep(3)
 driver.quit()
