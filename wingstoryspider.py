@@ -14,7 +14,7 @@ import os
 import re
 
 
-username  = "abcabcabc"
+username  = "huaan"
 date_str = datetime.now().strftime("%Y-%m-%d")
 
 # 初始化文件，如果文件不存在，则创建文件
@@ -26,31 +26,27 @@ if not os.path.exists(f"./ticketspidernew_{date_str}.txt"):
 
 def setup_driver():
     try:
-        chromedriver_path = r'/Users/xingzuozhou/Geek/chromedriver/chromedriver-mac-arm64/chromedriver'
+
+        # chromedriver_path = r'/Users/xingzuozhou/Geek/chromedriver/chromedriver-mac-arm64/chromedriver'
+        chromedriver_path = r'D:\Happy Hacking\chromedriver\chromedriver-win64\chromedriver.exe'
         service = Service(chromedriver_path)
         options = webdriver.ChromeOptions()
         options.add_argument('--start-maximized')
-        # options.add_argument('--disable-extensions')
+        options.add_argument('--disable-extensions')
         # options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-web-security')
         options.add_argument('--allow-running-insecure-content')
         options.add_argument('--ignore-certificate-errors')
-        # 加载yescaptcha人机助手
-        # options.add_extension(r'/Users/xingzuozhou/Geek/投票爬虫/google_pro_1.1.64.zip')
-        options.add_argument('--load-extension=/Users/xingzuozhou/Geek/投票爬虫/google_pro_1.1.64')
+        # options.add_argument('--load-extension=/Users/xingzuozhou/Geek/投票爬虫/google_pro_1.1.64')
+        options.add_argument('--load-extension=D:\Happy Hacking\yescaptchadriver')
         driver = webdriver.Chrome(service=service, options=options)
         logging.info("WebDriver 初始化成功")
         return driver
     except Exception as e:
         logging.error(f"WebDriver 初始化失败: {e}")
         return None
-    
-    
-
 driver = setup_driver()
-
-
 
 # 访问投票网站
 driver.get("https://wingstory.net/")
@@ -112,23 +108,27 @@ vote_button.click()
 print("投票按钮已点击")
 
 time.sleep(2)
-# 等待 captcha-status div 出现
+# 验证投票结果
 flag = 0
 while flag == 0:
-    # try:
         captcha_status = WebDriverWait(driver,10).until(
             EC.presence_of_element_located((By.ID, "captcha-status"))
         )
         print("captcha-status 已加载")
-
+        print("captcha-status 内容:", captcha_status.get_attribute("innerHTML"))
+        
         try:
-            p_element = captcha_status.find_element(By.CSS_SELECTOR, "p[align='center']")
-            if p_element.text:  # 如果p标签存在且有文本
-                status_message = p_element.text
+            # 只检测p标签
+            # p_element = captcha_status.find_element(By.TAG_NAME, "p")
+        #     p_element = WebDriverWait(driver, 10).until(
+        #     EC.presence_of_element_located((By.CSS_SELECTOR, "#captcha-status p"))
+        # )
+            p_text=captcha_status.find_element(By.XPATH, ".//p[@align='center']")
+            if p_text:
+                status_message = p_text.text
                 print(f"验证结果: {status_message}")
-                
-                # 检查验证是否成功
-                if "thank" in status_message.lower() or "thanks" in status_message.lower():
+                # 精确匹配 "Thank you for voting!" 文本
+                if "Thank you for voting!" in status_message:
                     print("自动投票成功")
                     with open(f"./ticketspidernew_{date_str}.txt", "a", encoding="utf-8") as f:
                         f.write(f"{username} -> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -> 自动投票成功\n")
@@ -137,11 +137,14 @@ while flag == 0:
                     with open(f"./ticketspidernew_{date_str}.txt", "a", encoding="utf-8") as f:
                         f.write(f"{username} -> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -> 自动投票失败: {status_message}\n")
                 flag = 1  # 有结果后退出循环
+            else:
+                print("未检测到p标签，继续等待...")
+                time.sleep(0.5)
         except:
-            print("未检测到p标签或p标签无文本，继续等待...")
+            print("未检测到p标签，继续等待...")
             time.sleep(0.5)
             
 # 完成后退出
-time.sleep(3)
+time.sleep(10)
 driver.quit()
 
